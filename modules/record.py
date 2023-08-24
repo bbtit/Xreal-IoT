@@ -41,13 +41,13 @@ class SoundRecorder:
     CHUNK = 1024
     DEQUE_SIZE = 6
 
-    def __init__(self, file_name_queue: Queue, voice_angle_queue: Queue):
+    def __init__(self, file_path_queue: Queue, voice_angle_queue: Queue):
         self.file_number = 0
         self.p = pyaudio.PyAudio()
         self.ring_buffer = deque([], maxlen=self.DEQUE_SIZE)
         self.chunk_queue = Queue()
         self.frames = []
-        self.file_name_queue = file_name_queue
+        self.file_path_queue = file_path_queue
         self.voice_angle_queue = voice_angle_queue
 
     def read_parameter(self, param_name):
@@ -118,7 +118,7 @@ class SoundRecorder:
         wf.close()
         self.frames = []
         print(" * Done Save!")
-        self.file_name_queue.put(str(self.file_number) + ".wav")
+        self.file_path_queue.put(str(self.file_number) + ".wav")
         self.file_number += 1
 
     def run(self):
@@ -166,12 +166,12 @@ def get_file_name(file_name_queue):
 
 
 if __name__ == "__main__":
-    file_name_queue = Queue()
+    file_path_queue = Queue()
     voice_angle_queue = Queue()
 
-    Thread(target=get_file_name, args=(file_name_queue,)).start()
+    Thread(target=get_file_name, args=(file_path_queue,)).start()
     Thread(target=get_voice_angle, args=(voice_angle_queue,)).start()
 
-    recorder = SoundRecorder(file_name_queue, voice_angle_queue)
+    recorder = SoundRecorder(file_path_queue, voice_angle_queue)
     recorder.start_recording()
     recorder.run()
