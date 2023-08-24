@@ -3,8 +3,9 @@ import usb.util
 import struct
 import pyaudio
 import wave
-import queue
+from queue import Queue
 from collections import deque
+from threading import Thread
 
 
 class SoundRecorder:
@@ -40,12 +41,14 @@ class SoundRecorder:
     CHUNK = 1024
     DEQUE_SIZE = 6
 
-    def __init__(self):
+    def __init__(self, file_name_queue: Queue, voice_angle_queue: Queue):
         self.file_number = 0
         self.p = pyaudio.PyAudio()
         self.ring_buffer = deque([], maxlen=self.DEQUE_SIZE)
-        self.q = queue.Queue()
+        self.chunk_queue = Queue()
         self.frames = []
+        self.file_name_queue = file_name_queue
+        self.voice_angle_queue = voice_angle_queue
 
     def read_parameter(self, param_name):
         try:
@@ -83,7 +86,10 @@ class SoundRecorder:
 
     def audio_callback(self, in_data, frame_count, time_info, status):
         speech_detected = self.read_parameter("SPEECHDETECTED")
-        self.q.put((in_data, speech_detected))
+        self.chunk_queue.put((in_data, speech_detected))
+        if speech_detected == 1:
+            voice_angle = self.read_parameter("DOAANGLE")
+            self.voice_angle_queue.put(voice_angle)
         return (in_data, pyaudio.paContinue)
 
     def start_recording(self):
@@ -112,12 +118,13 @@ class SoundRecorder:
         wf.close()
         self.frames = []
         print(" * Done Save!")
+        self.file_name_queue.put(str(self.file_number) + ".wav")
         self.file_number += 1
 
     def run(self):
         try:
             while True:
-                data, vad = self.q.get()
+                data, vad = self.chunk_queue.get()
 
                 if vad == 1:
                     print("* VAD : " + str(vad))
@@ -148,7 +155,23 @@ class SoundRecorder:
             self.p.terminate()
 
 
+def get_voice_angle(voice_angle_queue):
+    while True:
+        print(f"Voice_Angle : { voice_angle_queue.get() }")
+
+
+def get_file_name(file_name_queue):
+    while True:
+        print(f"File_Name : { file_name_queue.get() }")
+
+
 if __name__ == "__main__":
-    recorder = SoundRecorder()
+    file_name_queue = Queue()
+    voice_angle_queue = Queue()
+
+    Thread(target=get_file_name, args=(file_name_queue,)).start()
+    Thread(target=get_voice_angle, args=(voice_angle_queue,)).start()
+
+    recorder = SoundRecorder(file_name_queue, voice_angle_queue)
     recorder.start_recording()
     recorder.run()
