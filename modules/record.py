@@ -155,17 +155,16 @@ class SoundRecorder:
             self.p.terminate()
 
 
-def get_voice_angle(voice_angle_queue):
-    while True:
-        print(f"Voice_Angle : { voice_angle_queue.get() }")
-
-
-def get_file_name(file_name_queue):
-    while True:
-        print(f"File_Name : { file_name_queue.get() }")
-
-
 if __name__ == "__main__":
+
+    def get_voice_angle(voice_angle_queue):
+        while True:
+            print(f"Voice_Angle : { voice_angle_queue.get() }")
+
+    def get_file_name(file_name_queue):
+        while True:
+            print(f"File_Name : { file_name_queue.get() }")
+
     file_path_queue = Queue()
     voice_angle_queue = Queue()
 
