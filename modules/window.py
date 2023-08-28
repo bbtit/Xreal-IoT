@@ -47,7 +47,7 @@ class WindowCanvasManager:
         return self.drown_text_id
 
     def update_arc_angle(self, obj_id, start_angle):
-        # 指定されたIDの円弧の角度を変更する
+        # 指定されたIDの円弧の角度を更新する
         self.canvas.itemconfig(obj_id, start=start_angle)
 
     def update_text_content(self, obj_id, new_text):
@@ -80,14 +80,14 @@ class WindowCanvasManager:
         if input_degree is None and input_text is None:
             self.root.after(
                 1000,
-                self.draw_voice_angle_arc_forever,
+                self.draw_voice_angle_arc_and_text_forever,
                 voice_angle_queue,
                 transcribed_text_queue,
             )
             return
 
         if input_degree is not None:
-            # 今まで円弧が描画されていない場合は描画する
+            # 円弧が描画されていない場合は描画する
             if self.drown_arc_id is None:
                 self.create_arc(
                     self.upper_left[0],
@@ -105,7 +105,7 @@ class WindowCanvasManager:
                 self.update_arc_angle(self.drown_arc_id, input_degree - 5)
 
         if input_text is not None:
-            # 今までテキストが描画されていない場合は描画する
+            # テキストが描画されていない場合は描画する
             if self.drown_text_id is None:
                 self.create_text(
                     self.window_center[0],
@@ -121,7 +121,7 @@ class WindowCanvasManager:
 
         self.root.after(
             1000,
-            self.draw_voice_angle_arc_forever,
+            self.draw_voice_angle_arc_and_text_forever,
             voice_angle_queue,
             transcribed_text_queue,
         )
@@ -142,7 +142,6 @@ if __name__ == "__main__":
             print(random_number)
             # Put the number in the queue
             q.put(random_number)
-
             # Sleep for 1 second
             sleep(1)
 
@@ -153,7 +152,6 @@ if __name__ == "__main__":
             print(random_alphabet)
             # Put the alphabet in the queue
             q.put(random_alphabet)
-
             # Sleep for 1 second
             sleep(2)
 
