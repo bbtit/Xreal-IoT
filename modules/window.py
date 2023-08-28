@@ -14,18 +14,18 @@ class WindowCanvasManager:
         self.root.attributes("-fullscreen", True)
 
         # 円の中心
-        self.circle_center = (screen_width / 2, screen_height / 2)
+        self.window_center = (screen_width / 2, screen_height / 2)
         # 円の半径
         self.circle_radius = min(screen_width, screen_height) / 2 - 200
 
         # 円の左上と右下の座標
         self.upper_left = (
-            self.circle_center[0] - self.circle_radius,
-            self.circle_center[1] - self.circle_radius,
+            self.window_center[0] - self.circle_radius,
+            self.window_center[1] - self.circle_radius,
         )
         self.lower_right = (
-            self.circle_center[0] + self.circle_radius,
-            self.circle_center[1] + self.circle_radius,
+            self.window_center[0] + self.circle_radius,
+            self.window_center[1] + self.circle_radius,
         )
 
         # キャンバスの作成
@@ -43,8 +43,8 @@ class WindowCanvasManager:
         return self.drown_arc_id
 
     def create_text(self, *args, **kwargs):
-        self.drawn_text_id = self.canvas.create_text(*args, **kwargs)
-        return self.drawn_text_id
+        self.drown_text_id = self.canvas.create_text(*args, **kwargs)
+        return self.drown_text_id
 
     def update_arc_angle(self, obj_id, start_angle):
         # 指定されたIDの円弧の角度を変更する
@@ -57,36 +57,74 @@ class WindowCanvasManager:
     def delete_object(self, obj_id):
         self.canvas.delete(obj_id)
 
-    def draw_voice_angle_arc_forever(self, queue: Queue):
-        # Queueから角度を取得し、円弧を描画する
-        input_degree: int = queue.get_nowait() if not queue.empty() else None
+    def draw_voice_angle_arc_and_text_forever(
+        self, voice_angle_queue: Queue, transcribed_text_queue: Queue
+    ):
+        # TODO Queueから何回かNoneを取得したら円弧とテキストを削除する
+        # Queueから角度を取得(ノンブロッキング)
+        input_degree: int = (
+            voice_angle_queue.get_nowait()
+            if not voice_angle_queue.empty()
+            else None
+        )
 
-        if input_degree is None:
-            # 再帰呼び出し
-            self.root.after(1000, self.draw_voice_angle_arc_forever, queue)
-            return
+        # Queueからテキストを取得(ノンブロッキング)
+        input_text: str = (
+            transcribed_text_queue.get_nowait()
+            if not transcribed_text_queue.empty()
+            else None
+        )
+        print(f"input_degree: {input_degree}, input_text: {input_text}")
 
-        # 今まで円弧が描画されていない場合は描画する
-        if self.drown_arc_id is None:
-            self.create_arc(
-                self.upper_left[0],
-                self.upper_left[1],
-                self.lower_right[0],
-                self.lower_right[1],
-                start=0,
-                extent=10,
-                style=tk.ARC,
-                outline="red",
-                width=10,
+        # どちらもNoneの場合は再帰呼び出し
+        if input_degree is None and input_text is None:
+            self.root.after(
+                1000,
+                self.draw_voice_angle_arc_forever,
+                voice_angle_queue,
+                transcribed_text_queue,
             )
-            # 再帰呼び出し
-            self.root.after(1000, self.draw_voice_angle_arc_forever, queue)
             return
 
-        # 円弧の角度を変更
-        self.update_arc_angle(self.drown_arc_id, input_degree - 5)
-        # 再帰呼び出し
-        self.root.after(1000, self.draw_voice_angle_arc_forever, queue)
+        if input_degree is not None:
+            # 今まで円弧が描画されていない場合は描画する
+            if self.drown_arc_id is None:
+                self.create_arc(
+                    self.upper_left[0],
+                    self.upper_left[1],
+                    self.lower_right[0],
+                    self.lower_right[1],
+                    start=0,
+                    extent=10,
+                    style=tk.ARC,
+                    outline="red",
+                    width=10,
+                )
+            # 円弧の角度を更新
+            else:
+                self.update_arc_angle(self.drown_arc_id, input_degree - 5)
+
+        if input_text is not None:
+            # 今までテキストが描画されていない場合は描画する
+            if self.drown_text_id is None:
+                self.create_text(
+                    self.window_center[0],
+                    self.window_center[1] + self.circle_radius + 100,
+                    text="Hello, world!",
+                    fill="blue",
+                    font=("Arial", 16),
+                    anchor="center",
+                )
+            # テキストを更新
+            else:
+                self.update_text_content(self.drown_text_id, input_text)
+
+        self.root.after(
+            1000,
+            self.draw_voice_angle_arc_forever,
+            voice_angle_queue,
+            transcribed_text_queue,
+        )
 
     def run(self):
         self.root.mainloop()
@@ -97,7 +135,7 @@ if __name__ == "__main__":
     import threading
     from time import sleep
 
-    def worker(q: Queue):
+    def angle_producer(q: Queue):
         while True:
             # Generate a random number between 0 and 360
             random_number = random.randint(0, 360)
@@ -108,10 +146,31 @@ if __name__ == "__main__":
             # Sleep for 1 second
             sleep(1)
 
-    q = Queue()
-    t = threading.Thread(target=worker, args=(q,))
-    t.start()
+    def transcribed_text_producer(q: Queue):
+        while True:
+            # Generate a random alphabet
+            random_alphabet = chr(random.randint(97, 122))
+            print(random_alphabet)
+            # Put the alphabet in the queue
+            q.put(random_alphabet)
+
+            # Sleep for 1 second
+            sleep(2)
+
+    voice_angle_queue = Queue()
+    angle_producer_thread = threading.Thread(
+        target=angle_producer, args=(voice_angle_queue,)
+    )
+    angle_producer_thread.start()
+
+    transcribed_text_queue = Queue()
+    transcribed_text_producer_thread = threading.Thread(
+        target=transcribed_text_producer, args=(transcribed_text_queue,)
+    )
+    transcribed_text_producer_thread.start()
 
     window_canvas = WindowCanvasManager()
-    window_canvas.draw_voice_angle_arc_forever(q)
+    window_canvas.draw_voice_angle_arc_and_text_forever(
+        voice_angle_queue, transcribed_text_queue
+    )
     window_canvas.run()
