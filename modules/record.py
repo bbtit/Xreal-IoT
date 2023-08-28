@@ -17,7 +17,8 @@ class SoundRecorder:
             359,
             0,
             "ro",
-            "DOA angle. Current value. Orientation depends on build configuration.",
+            "DOA angle. Current value. \
+            Orientation depends on build configuration.",
         ),
         "SPEECHDETECTED": (
             19,
@@ -157,11 +158,11 @@ class SoundRecorder:
 
 if __name__ == "__main__":
 
-    def get_voice_angle(voice_angle_queue):
+    def get_voice_angle(voice_angle_queue: Queue):
         while True:
             print(f"Voice_Angle : { voice_angle_queue.get() }")
 
-    def get_file_name(file_name_queue):
+    def get_file_name(file_name_queue: Queue):
         while True:
             print(f"File_Name : { file_name_queue.get() }")
 
