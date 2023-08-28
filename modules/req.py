@@ -2,9 +2,10 @@ import asyncio
 import aiohttp
 import aiofiles
 from rich import print
+from queue import Queue
 
 
-async def process_queue(file_path_queue, url):
+async def process_queue(file_path_queue: Queue, url):
     async with aiohttp.ClientSession() as session:
         while True:
             file_path = await file_path_queue.get()
