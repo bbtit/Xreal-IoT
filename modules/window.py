@@ -11,7 +11,7 @@ class WindowCanvasManager:
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width}x{screen_height}+0+0")
-        self.root.attributes("-fullscreen", True)
+        # self.root.attributes("-fullscreen", True)
 
         # 円の中心
         self.window_center = (screen_width / 2, screen_height / 2)
