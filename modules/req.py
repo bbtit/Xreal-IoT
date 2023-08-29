@@ -3,42 +3,16 @@ import aiohttp
 import aiofiles
 from rich import print
 from queue import Queue
-
-
-async def process_queue(file_path_queue: Queue, url):
-    async with aiohttp.ClientSession() as session:
-        while True:
-            file_path = await file_path_queue.get()
-            asyncio.create_task(post_file(session, url, file_path))
-            file_path_queue.task_done()
-
-
-async def post_file(session, url, file_path):
-    async with aiofiles.open(file_path, "rb") as file:
-        data = await file.read()
-        files = {"file": ("weather.mp3", data)}
-        async with session.post(url, data=files) as response:
-            json_response = await response.json()
-            print(f"{json_response}")
-
-
-async def main(file_path, url):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            url, data={"file": open(file_path, "rb")}
-        ) as response:
-            print(response)
-            json_response = await response.json()
-            print(
-                f"""File Path: {file_path},
-                \nStatus Code: {response.status},
-                \nJSON Content: {json_response}"""
-            )
+from threading import Thread
+from time import sleep
 
 
 class FileUploader:
-    def __init__(self, file_path_queue, url):
+    def __init__(
+        self, file_path_queue: Queue, transcribed_text_queue: Queue, url: str
+    ):
         self.file_path_queue = file_path_queue
+        self.transcribed_text_queue = transcribed_text_queue
         self.url = url
 
     async def process_queue(self):
@@ -56,32 +30,46 @@ class FileUploader:
                 json_response = await response.json()
                 print(f"{json_response}")
 
-    async def start(self):
+    async def run(self):
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.url, data={"file": open(file_path, "rb")}
-            ) as response:
-                print(response)
-                json_response = await response.json()
-                print(
-                    f"""File Path: {file_path},
-                    \nStatus Code: {response.status},
-                    \nJSON Content: {json_response}"""
+            while True:
+                file_path: str = (
+                    self.file_path_queue.get_nowait()
+                    if not self.file_path_queue.empty()
+                    else None
                 )
+                if file_path is None:
+                    continue
 
-
-async def main2(file_path, url):
-    file_path_queue = asyncio.Queue()
-    file_path_queue.put_nowait(file_path)
-
-    uploader = FileUploader(file_path_queue, url)
-    await asyncio.gather(
-        uploader.process_queue(),
-        uploader.start(),
-    )
+                async with session.post(
+                    self.url, data={"file": open(file_path, "rb")}
+                ) as response:
+                    print(response)
+                    json_response = await response.json()
+                    self.transcribed_text_queue.put(json_response["text"])
+                    print(
+                        f"""File Path: {file_path},
+                            \nStatus Code: {response.status},
+                            \nJSON Content: {json_response}"""
+                    )
 
 
 if __name__ == "__main__":
     file_path = "weather.mp3"
     url = "http://192.168.11.53:80/api/transcribe"
-    asyncio.run(main(file_path, url))
+    # asyncio.run(main(file_path, url))
+
+    file_path_queue = Queue()
+    transcribed_text_queue = Queue()
+
+    file_uploader = FileUploader(file_path_queue, transcribed_text_queue, url)
+    file_upload_thread = Thread(
+        target=asyncio.run, args=(file_uploader.run(),)
+    )
+    file_upload_thread.start()
+
+    while True:
+        file_path_queue.put(file_path)
+        sleep(1)
+
+    # print(type(file_uploader.start()))
