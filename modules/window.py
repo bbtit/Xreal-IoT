@@ -79,7 +79,7 @@ class WindowCanvasManager:
         # どちらもNoneの場合は再帰呼び出し
         if input_degree is None and input_text is None:
             self.root.after(
-                1000,
+                34,
                 self.draw_voice_angle_arc_and_text_forever,
                 voice_angle_queue,
                 transcribed_text_queue,
@@ -120,7 +120,7 @@ class WindowCanvasManager:
                 self.update_text_content(self.drown_text_id, input_text)
 
         self.root.after(
-            1000,
+            34,
             self.draw_voice_angle_arc_and_text_forever,
             voice_angle_queue,
             transcribed_text_queue,
