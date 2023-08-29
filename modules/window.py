@@ -111,8 +111,8 @@ class WindowCanvasManager:
                     self.window_center[0],
                     self.window_center[1] + self.circle_radius + 100,
                     text="Hello, world!",
-                    fill="blue",
-                    font=("Arial", 16),
+                    fill="red",
+                    font=("Arial", 24),
                     anchor="center",
                 )
             # テキストを更新
