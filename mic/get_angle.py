@@ -1,4 +1,4 @@
-from modules.record import SoundRecorder
+from ..modules.record import SoundRecorder
 from time import sleep
 from queue import Queue
 
