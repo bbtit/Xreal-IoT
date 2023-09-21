@@ -7,5 +7,5 @@ if __name__ == "__main__":
     voice_angle_queue = Queue()
     recorder = SoundRecorder(file_path_queue, voice_angle_queue)
     while True:
-        recorder.read_parameter("DOAANGLE")
+        print(recorder.read_parameter("DOAANGLE"))
         sleep(1)
