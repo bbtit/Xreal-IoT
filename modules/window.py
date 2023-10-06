@@ -30,9 +30,12 @@ class WindowCanvasManager:
 
         # キャンバスの作成
         self.canvas = tk.Canvas(
-            self.root, width=screen_width, height=screen_height, bg=bg_color
+            self.root,
+            width=screen_width + 10,
+            height=screen_height + 10,
+            bg=bg_color,
         )
-        self.canvas.pack()
+        self.canvas.place(x=-5, y=-5)
 
         # 描写された図形とテキストのIDを保持
         self.drown_arc_id = None
