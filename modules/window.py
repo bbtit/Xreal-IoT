@@ -158,13 +158,13 @@ if __name__ == "__main__":
             # Sleep for 1 second
             sleep(2)
 
-    voice_angle_queue = Queue()
+    voice_angle_queue: Queue = Queue()
     angle_producer_thread = threading.Thread(
         target=angle_producer, args=(voice_angle_queue,)
     )
     angle_producer_thread.start()
 
-    transcribed_text_queue = Queue()
+    transcribed_text_queue: Queue = Queue()
     transcribed_text_producer_thread = threading.Thread(
         target=transcribed_text_producer, args=(transcribed_text_queue,)
     )

@@ -4,7 +4,7 @@ import wave
 RESPEAKER_RATE = 16000
 # change base on firmwares,
 # 1_channel_firmware.bin as 1 or 6_channels_firmware.bin as 6
-RESPEAKER_CHANNELS = 6
+RESPEAKER_CHANNELS = 1
 RESPEAKER_WIDTH = 2
 # run getDeviceInfo.py to get index
 RESPEAKER_INDEX = 2  # refer to input device id
