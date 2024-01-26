@@ -1,6 +1,6 @@
 import asyncio
 import aiohttp
-import aiofiles
+import aiofiles  # type: ignore
 from rich import print
 from queue import Queue
 from threading import Thread
@@ -59,8 +59,8 @@ if __name__ == "__main__":
     url = "http://192.168.11.53:80/api/transcribe"
     # asyncio.run(main(file_path, url))
 
-    file_path_queue = Queue()
-    transcribed_text_queue = Queue()
+    file_path_queue: Queue = Queue()
+    transcribed_text_queue: Queue = Queue()
 
     file_uploader = FileUploader(file_path_queue, transcribed_text_queue, url)
     file_upload_thread = Thread(

@@ -1,5 +1,5 @@
-import usb.core
-import usb.util
+import usb.core  # type: ignore
+import usb.util  # type: ignore
 import struct
 import pyaudio
 import wave
@@ -45,9 +45,9 @@ class SoundRecorder:
     def __init__(self, file_path_queue: Queue, voice_angle_queue: Queue):
         self.file_number = 0
         self.p = pyaudio.PyAudio()
-        self.ring_buffer = deque([], maxlen=self.DEQUE_SIZE)
-        self.chunk_queue = Queue()
-        self.frames = []
+        self.ring_buffer: deque = deque([], maxlen=self.DEQUE_SIZE)
+        self.chunk_queue: Queue = Queue()
+        self.frames: list[bytes] = []
         self.file_path_queue = file_path_queue
         self.voice_angle_queue = voice_angle_queue
 
@@ -166,8 +166,8 @@ if __name__ == "__main__":
         while True:
             print(f"File_Name : { file_name_queue.get() }")
 
-    file_path_queue = Queue()
-    voice_angle_queue = Queue()
+    file_path_queue: Queue = Queue()
+    voice_angle_queue: Queue = Queue()
 
     Thread(target=get_file_name, args=(file_path_queue,)).start()
     Thread(target=get_voice_angle, args=(voice_angle_queue,)).start()

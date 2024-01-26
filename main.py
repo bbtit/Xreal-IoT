@@ -14,9 +14,9 @@ def safe_exit(signum, frame):
 
 
 if __name__ == "__main__":
-    file_path_queue = Queue()
-    voice_angle_queue = Queue()
-    transcribed_text_queue = Queue()
+    file_path_queue: Queue = Queue()
+    voice_angle_queue: Queue = Queue()
+    transcribed_text_queue: Queue = Queue()
     url = "http://192.168.11.53:80/api/transcribe"
 
     # キーボード割り込みを処理するための設定
