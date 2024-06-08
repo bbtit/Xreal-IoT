@@ -101,6 +101,7 @@ class SoundRecorder:
             input=True,
             input_device_index=self.RESPEAKER_INDEX,
             stream_callback=self.audio_callback,
+            frames_per_buffer=self.CHUNK
         )
         print("\n\n-- Start Stream --\n")
 
