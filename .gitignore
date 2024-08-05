@@ -1,3 +1,5 @@
 **/*.wav
 __pycache__/
 .mypy_chche/
+content/
+pretrained_model/
