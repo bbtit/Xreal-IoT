@@ -66,9 +66,7 @@ class WindowCanvasManager:
         # TODO Queueから何回かNoneを取得したら円弧とテキストを削除する
         # Queueから角度を取得(ノンブロッキング)
         input_degree: int = (
-            voice_angle_queue.get_nowait()
-            if not voice_angle_queue.empty()
-            else None
+            voice_angle_queue.get_nowait() if not voice_angle_queue.empty() else None
         )
 
         # Queueからテキストを取得(ノンブロッキング)
@@ -109,13 +107,16 @@ class WindowCanvasManager:
 
         if input_text is not None:
             # テキストが描画されていない場合は描画する
+            font_size = 54
+            y_offset = 100 + (font_size - 24)  # フォントサイズ増加分を考慮
+
             if self.drown_text_id is None:
                 self.create_text(
                     self.window_center[0],
-                    self.window_center[1] + self.circle_radius + 100,
+                    self.window_center[1] + self.circle_radius + y_offset,
                     text="Hello, world!",
                     fill="red",
-                    font=("Arial", 24),
+                    font=("Arial", font_size),
                     anchor="center",
                 )
             # テキストを更新
